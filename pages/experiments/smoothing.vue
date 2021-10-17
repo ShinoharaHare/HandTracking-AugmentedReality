@@ -6,9 +6,9 @@
             b-form-file(accept=".landmarks.jsonl" browse-text="瀏覽" placeholder="" v-model="inputFile")
 
             b-card.mt-2
-                template(#header)
-                    b-form-checkbox(switch id="switch-smooth" v-model="smooth.enabled")
-                        label(for="switch-smooth") 啟用平滑化
+                b-form-checkbox(switch id="switch-smooth" slot="header" v-model="smooth.enabled")
+                    label(for="switch-smooth") 啟用平滑化
+                    
                 b-row.text-center
                     b-col
                         label Count
