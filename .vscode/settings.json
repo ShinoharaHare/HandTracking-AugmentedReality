@@ -1,0 +1,18 @@
+{
+    "javascript.format.semicolons": "remove",
+    "typescript.preferences.quoteStyle": "single",
+    "javascript.preferences.quoteStyle": "single",
+    "files.exclude": {
+        "**/.git": true,
+        "**/.svn": true,
+        "**/.hg": true,
+        "**/CVS": true,
+        "**/.DS_Store": true,
+        "**/Thumbs.db": true,
+        "node_modules": true,
+        ".nuxt": true,
+        ".vscode": true
+    },
+    "explorerExclude.backup": null,
+    "typescript.tsdk": "node_modules\\typescript\\lib"
+}
