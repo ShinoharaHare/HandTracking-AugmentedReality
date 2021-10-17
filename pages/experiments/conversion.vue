@@ -13,7 +13,7 @@ b-card(no-body)
             .actions-wrap
                 b-button(variant="info" :disabled="v2l.converting" @click="downloadLandmarks") {{ v2l.buttonText }}
         
-        b-tab(active title="Landmarks to Angles")
+        b-tab(title="Landmarks to Angles")
             .p-4
                 b-row
                     b-col
