@@ -1,4 +1,4 @@
-# HandMotionTracking
+# HandTracking+AugmentedReality
 
 ## Build Setup
 
