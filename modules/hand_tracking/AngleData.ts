@@ -1,4 +1,4 @@
-import { Finger, Knucle } from './types'
+import { Finger, Knucle } from './data'
 
 export class AngleData {
     private data: Float32Array = new Float32Array(15)

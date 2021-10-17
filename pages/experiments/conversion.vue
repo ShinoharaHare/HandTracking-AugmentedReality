@@ -37,14 +37,12 @@ b-card(no-body)
             
             .actions-wrap
                 b-button(variant="info" @click="downloadAngles") 轉換&#38;下載
-
-
 </template>
 
 <script lang="ts">
 import { Component, Ref, Vue, Watch } from 'nuxt-property-decorator'
 import { Hands, NormalizedLandmark } from '@mediapipe/hands'
-import { AngleData, AngleSmoother, MP3DEstimator } from '~/modules/hand_tracking'
+import { AngleData, AngleSmoother, MP3DEstimator } from '@/modules/hand_tracking'
 
 const hands = new Hands({ locateFile: (file) => `/mediapipe/${file}` })
 hands.setOptions({

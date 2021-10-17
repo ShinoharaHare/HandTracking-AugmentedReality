@@ -1,3 +1,5 @@
+import * as THREE from 'three'
+
 export enum Handedness {
     Unknown,
     Left,
@@ -17,3 +19,5 @@ export enum Knucle {
     Intermediate,
     Distal
 }
+
+

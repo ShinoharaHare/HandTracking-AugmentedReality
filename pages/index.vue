@@ -6,7 +6,8 @@ div(ref="container")
 <script lang="ts">
 import { Component, Ref, Vue } from 'nuxt-property-decorator'
 import { Core } from '@/modules/augmented_reality'
-import { MediaPipeTracker } from '@/modules/hand_tracking'
+import { HandTracker, MediaPipeTracker } from '@/modules/hand_tracking/tracker'
+import { LandmarkSmootherPlugin, MP3DAngleEstimatorPlugin } from '@/modules/hand_tracking/tracker/plugins'
 
 import FpsWidget from '@/components/FpsWidget.vue'
 
@@ -16,7 +17,7 @@ export default class extends Vue {
     @Ref('fps') fps!: FpsWidget
 
     core!: Core
-    tracker!: MediaPipeTracker
+    tracker!: HandTracker
 
     frames: number = 0
 
@@ -35,6 +36,8 @@ export default class extends Vue {
 
         this.tracker = new MediaPipeTracker(
             {
+                target: this.core.arSourceVideo,
+                plugins: [new LandmarkSmootherPlugin(), new MP3DAngleEstimatorPlugin()],
                 maxNumHands: 2,
                 minTrackingConfidence: 0.9,
                 selfieMode: false
@@ -44,10 +47,13 @@ export default class extends Vue {
             }
         )
 
-        this.tracker.track(this.core.arSourceVideo, () => {
-            this.frames++
+        this.tracker.onResults(({ results }) => {
+            if (results.length) {
+                console.log(results)
+            }
         })
 
+        this.tracker.start()
         this.core.start()
     }
 }

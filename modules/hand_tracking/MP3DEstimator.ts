@@ -1,6 +1,6 @@
 import { NormalizedLandmark } from '@mediapipe/hands'
 import { Vector3 } from 'three'
-import { Finger, Knucle } from './types'
+import { Finger, Knucle } from './data'
 import { AngleData } from './AngleData'
 
 export class MP3DEstimator {
