@@ -13,19 +13,27 @@ b-card(no-body @keydown.left="prevFrame" @keydown.right="nextFrame" tabindex="0"
 
     .label-wrap
         .text-center(v-for="fingerName in fingerNames") {{ fingerName }}
+        .text-center 全部
         .text-center(v-for="i in 5")
             b-button(block :variant="getVariant('danger', i - 1)" @click="label(i - 1, false)") X
             b-button(block :variant="getVariant('primary', i - 1)" @click="label(i - 1, true)") O
+        .text-center
+            b-button(pill block variant="danger" @click="label(-1, false)") X
+            b-button(pill block variant="primary" @click="label(-1, true)") O
+
     
     .btn-wrap
+        b-form-checkbox(switch id="switch-keep--previous" v-model="keepPrevious")
+            label(for="switch-keep--previous") 保留前一幀
+
         b-button(variant="danger" @click="prevFrame") 上一幀
         .inputs
-            b-form-input(type="number" v-model="frameRate")
-            b-form-input(type="number" min="0" :max="totalFrame" v-model="currentFrame")
+            b-form-input(type="number" v-model.number="frameRate")
+            b-form-input(type="number" min="0" :max="totalFrame" v-model.number="currentFrame")
         b-button(variant="success" @click="nextFrame") 下一幀
         b-button(variant="info" @click="latestFrame") 最新
 
-    b-button(:download="outputName" @click.prevent="download") 下載資料
+    b-button(@click.prevent="downloadData") 下載資料
 </template>
 
 <script lang="ts">
@@ -50,8 +58,9 @@ export default class extends Vue {
     currentTime: number = 0
     totalFrame: number = 0
     frameRate: number = 29.32
+    keepPrevious: boolean = true
 
-    db!: idb.IDBPDatabase<LabelDB>
+    db?: idb.IDBPDatabase<LabelDB>
     cached: Label[] = []
 
     get fingerNames() {
@@ -59,12 +68,14 @@ export default class extends Vue {
     }
 
     get currentLabel() {
-        this.cached[this.currentFrame] = this.cached[this.currentFrame] ?? []
+        if (!this.cached[this.currentFrame]) {
+            let v: any = undefined
+            if (this.keepPrevious && this.cached[this.currentFrame - 1]) {
+                v = Array.from(this.cached[this.currentFrame - 1])
+            }
+            this.cached[this.currentFrame] = v
+        }
         return this.cached[this.currentFrame]
-    }
-
-    get outputName() {
-        return this.videoFile?.name.split('.')[0] + '.label.jsonl'
     }
 
     playVideo() {
@@ -88,8 +99,14 @@ export default class extends Vue {
     }
 
     async label(finger: number, pressed: boolean) {
-        this.currentLabel[finger] = pressed
-        this.db.put('labels', this.cached, this.videoFile?.name)
+        if (finger === -1) {
+            for (let i = 0; i < 5; i++) {
+                this.currentLabel[i] = pressed
+            }
+        } else {
+            this.currentLabel[finger] = pressed
+        }
+        this.onCachedChange()
         this.$forceUpdate()
     }
 
@@ -97,25 +114,23 @@ export default class extends Vue {
         let prefix = 'outline-'
         switch (color) {
             case 'danger':
-                this.currentLabel[finger] === false && (prefix = '')
+                this.currentLabel?.[finger] === false && (prefix = '')
                 break
             case 'primary':
-                this.currentLabel[finger] === true && (prefix = '')
+                this.currentLabel?.[finger] === true && (prefix = '')
                 break
         }
         return prefix + color
     }
 
-    download(e: Event) {
+    downloadData() {
         let json = ''
-        for (let v of Object.values(this.cached)) {
-            json += JSON.stringify(v) + '\n'
+        for (let value of Object.values(this.cached)) {
+            json += JSON.stringify(value) + '\n'
         }
-        const a: HTMLAnchorElement = document.createElement('a')
-        a.href =  URL.createObjectURL(new Blob([json]))
-        a.download = this.outputName
-        a.click()
-        URL.revokeObjectURL(a.href)
+        const url = URL.createObjectURL(new Blob([json]))
+        this.download(url, this.videoFile?.name.split('.')[0] + '.label.jsonl')
+        URL.revokeObjectURL(url)
     }
 
     @Watch('videoFile')
@@ -124,13 +139,18 @@ export default class extends Vue {
             URL.revokeObjectURL(this.videoSrc)
             this.videoSrc = URL.createObjectURL(this.videoFile)
             this.cached =
-                (await this.db.get('labels', this.videoFile!.name)) ?? []
+                (await this.db?.get('labels', this.videoFile!.name)) ?? []
         }
     }
 
     @Watch('currentFrame')
-    onCurrentFrameChange() {
-        this.currentTime = this.currentFrame / this.frameRate
+    onCurrentFrameChange(newValue: number) {
+        this.currentTime = newValue / this.frameRate
+    }
+
+    @Watch('cached', { deep: true })
+    onCachedChange() {
+        this.db?.put('labels', this.cached, this.videoFile?.name)
     }
 
     async created() {
@@ -145,8 +165,6 @@ export default class extends Vue {
         this.video.addEventListener('loadedmetadata', () => {
             this.totalFrame = Math.floor(this.video.duration * this.frameRate)
         })
-
-        window.test = this
     }
 }
 </script>
@@ -182,7 +200,7 @@ export default class extends Vue {
 
 .label-wrap {
     display: grid;
-    grid-template-columns: repeat(5, 1fr);
+    grid-template-columns: repeat(6, 1fr);
     padding: 4px;
     gap: 4px;
 }
