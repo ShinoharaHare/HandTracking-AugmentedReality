@@ -69,13 +69,17 @@ export default class extends Vue {
 
     get currentLabel() {
         if (!this.cached[this.currentFrame]) {
-            let v: any = undefined
+            let v: any = []
             if (this.keepPrevious && this.cached[this.currentFrame - 1]) {
                 v = Array.from(this.cached[this.currentFrame - 1])
             }
             this.cached[this.currentFrame] = v
         }
         return this.cached[this.currentFrame]
+    }
+
+    set currentLabel(v: Label) {
+        this.cached[this.currentFrame] = v
     }
 
     playVideo() {
