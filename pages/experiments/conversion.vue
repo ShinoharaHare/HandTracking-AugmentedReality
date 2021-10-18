@@ -98,7 +98,7 @@ export default class extends Vue {
         this.v2l.converting = false
 
         const url = URL.createObjectURL(new Blob([json]))
-        this.download(url, this.v2l.videoFile.name.split('.')[0] + '.landmarks.json')
+        this.download(url, this.v2l.videoFile.name.split('.')[0] + '.landmarks.jsonl')
         URL.revokeObjectURL(url)
     }
 
@@ -111,20 +111,25 @@ export default class extends Vue {
 
         const estimator = new MP3DEstimator()
         const smoother = new AngleSmoother(this.l2a.count, this.l2a.tolerance * (Math.PI / 180))
+        const smoothAngle = new AngleData()
         const angleData = new AngleData()
-        smoother.bind(angleData)
+
+        smoother.bind(smoothAngle)
         let json = ''
         for (let line of lines) {
             if (!line) {
                 break
             }
             const landmarks: NormalizedLandmark[] = JSON.parse(line)
+
             estimator.update(landmarks)
             estimator.getAngles(angleData)
             if (this.l2a.smooth) {
                 smoother.update(angleData)
+                json += smoothAngle.toJSON() + '\n'
+            } else {
+                json += angleData.toJSON() + '\n'
             }
-            json += angleData.toJSON() + '\n'    
         }
         const url = URL.createObjectURL(new Blob([json]))
         this.download(url, this.l2a.inputFile.name.split('.')[0] + '.angles.jsonl')
