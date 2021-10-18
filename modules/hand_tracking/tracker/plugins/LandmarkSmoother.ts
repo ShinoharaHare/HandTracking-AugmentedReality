@@ -1,11 +1,8 @@
-import {
-    HandTracker,
-    HandTrackerPlugin,
-    HandTrackerResult
-} from '../HandTracker'
+import { HandTrackerPlugin, HandTrackerResult } from '../HandTracker'
 import * as THREE from 'three'
+import { Landmarks } from '..'
 
-interface Options {
+export interface LandmarkSmootherPluginOptions {
     smoothCount: number
     smoothTolerance: number
     overwrite: boolean
@@ -16,12 +13,12 @@ export class LandmarkSmootherPlugin extends HandTrackerPlugin {
     smoothTolerance: number = 0.05
     overwrite: boolean = false
 
-    private pools: THREE.Vector3[][][] = []
+    private pools: Landmarks[][] = []
     private outputs: THREE.Vector3[][] = []
     private average: THREE.Vector3 = new THREE.Vector3()
     private index: number = 0
 
-    constructor(options?: Partial<Options>) {
+    constructor(options?: Partial<LandmarkSmootherPluginOptions>) {
         super('LandmarkSmootherPlugin')
         Object.assign(this, options)
     }
@@ -40,34 +37,31 @@ export class LandmarkSmootherPlugin extends HandTrackerPlugin {
         }
     }
 
-    onResults(results: HandTrackerResult[]) {
-        let outputs: THREE.Vector3[][]
+    onResult(result: HandTrackerResult) {
+        let outputs: Landmarks[]
+
         if (this.overwrite) {
-            outputs = results.map((result) => result.landmarks)
+            outputs = result.multiLandmarks
         } else {
-            results.forEach((result, i) => {
-                result.smoothLandmarks = this.outputs[i]
-            })
-            outputs = this.outputs
+            result.multiSmoothLandmarks = this.outputs
+            outputs = result.multiSmoothLandmarks
         }
 
-        results.forEach((result, i) => {
+        result.multiLandmarks.forEach((landmarks, i) => {
             const pool = this.pools[i]
 
-            result.landmarks.forEach((landmark, j) => {
+            // copy every landmarks to the last pool
+            landmarks.forEach((landmark, j) => {
                 pool[this.index][j].copy(landmark)
             })
 
+            // average of every landmark in the pool
             for (let j = 0; j < 21; j++) {
                 this.average.set(0, 0, 0)
-                pool.forEach((landmarks) => {
-                    this.average.add(landmarks[j])
-                })
+                pool.forEach((landmarks) => this.average.add(landmarks[j]))
                 this.average.divideScalar(this.smoothCount)
-                if (
-                    this.average.distanceTo(result.landmarks[j]) >
-                    this.smoothTolerance
-                ) {
+
+                if (this.average.distanceTo(landmarks[j]) > this.smoothTolerance) {
                     outputs[i][j].copy(this.average)
                 }
             }

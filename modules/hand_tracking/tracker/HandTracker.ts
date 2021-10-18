@@ -1,15 +1,15 @@
 import * as THREE from 'three'
 
-export interface HandTrackerResult {
-    landmarks: THREE.Vector3[]
-}
-
-export type HandTrackerResults = HandTrackerResult[]
-
 export type InputTarget =
     | HTMLVideoElement
     | HTMLImageElement
     | HTMLCanvasElement
+
+export type Landmarks = THREE.Vector3[]
+
+export interface HandTrackerResult {
+    multiLandmarks: Landmarks[]
+}
 
 function wait(ms: number) {
     return new Promise((resolve) => setTimeout(resolve, ms))
@@ -28,11 +28,11 @@ export abstract class HandTrackerPlugin {
     }
 
     abstract onStart(): void
-    abstract onResults(results: HandTrackerResults): void
+    abstract onResult(result: HandTrackerResult): void
 }
 
 class HandTrackerResultEvent extends Event {
-    constructor(public results: HandTrackerResults) {
+    constructor(public result: HandTrackerResult) {
         super('result')
     }
 }
@@ -66,7 +66,7 @@ export abstract class HandTracker extends EventTarget {
         Object.assign(this, options)
     }
 
-    abstract infer(image: InputTarget): Promise<HandTrackerResults>
+    abstract infer(image: InputTarget): Promise<HandTrackerResult>
 
     addPlugin(plugin: HandTrackerPlugin) {
         if (this.plugins.has(plugin.name)) {
@@ -110,7 +110,7 @@ export abstract class HandTracker extends EventTarget {
                 const result = await this.infer(this.target)
 
                 this.plugins.forEach((plugin) => {
-                    plugin.onResults(result)
+                    plugin.onResult(result)
                 })
 
                 this.dispatchEvent(new HandTrackerResultEvent(result))
@@ -131,7 +131,10 @@ export abstract class HandTracker extends EventTarget {
         return this.runningPromise
     }
 
-    onResults(callback: (event: HandTrackerResultEvent) => void) {
-        this.addEventListener('result', callback as any)
+    onResults(callback: (result: HandTrackerResult) => void) {
+        this.addEventListener('result', (e: unknown) => {
+            const envent = e as HandTrackerResultEvent
+            callback(envent.result)
+        })
     }
 }

@@ -1,5 +1,5 @@
 import * as THREE from 'three'
-import { HandTrackerPlugin, HandTrackerResults } from '..'
+import { HandTrackerPlugin, HandTrackerResult } from '..'
 import { Finger, Knucle } from '../..'
 
 export class MP3DAngleEstimatorPlugin extends HandTrackerPlugin {
@@ -46,14 +46,17 @@ export class MP3DAngleEstimatorPlugin extends HandTrackerPlugin {
 
     onStart(): void {}
 
-    onResults(results: HandTrackerResults): void {
-        results.forEach((result) => {
-            result.angles = new Float32Array(15)
-            for (let i = 0; i < 5; i++) {
-                for (let j = 0; j < 3; j++) {
-                    result.angles[i * 3 + j] = this.calculateFingerAngle(result.landmarks, i, j)
+    onResult(result: HandTrackerResult): void {
+        result.multiAngles = []
+        for (let i in result.multiLandmarks) {
+            const landmarks = result.multiLandmarks[i]
+            result.multiAngles![i] = new Float32Array(15)
+            for (let j = 0; j < 5; j++) {
+                for (let k = 0; k < 3; k++) {
+                    result.multiAngles![j][j * 3 + k] =
+                        this.calculateFingerAngle(landmarks, j, k)
                 }
             }
-        })
+        }
     }
 }

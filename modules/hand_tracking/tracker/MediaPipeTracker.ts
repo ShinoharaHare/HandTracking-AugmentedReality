@@ -1,7 +1,7 @@
 import {
     HandTracker,
     HandTrackerOptions,
-    HandTrackerResults,
+    HandTrackerResult,
     InputTarget
 } from './HandTracker'
 
@@ -21,19 +21,17 @@ export class MediaPipeTracker extends HandTracker {
         this.hands.setOptions(options)
     }
 
-    public infer(target: InputTarget): Promise<HandTrackerResults> {
+    public infer(target: InputTarget): Promise<HandTrackerResult> {
         return new Promise((resolve) => {
-            const outputs: HandTrackerResults = []
+            const outputs: HandTrackerResult = {
+                multiLandmarks: []
+            }
             this.hands.onResults((results) => {
-                results.multiHandLandmarks.forEach((landmarks, i) => {
-                    outputs[i] = { landmarks: [] }
-                    landmarks.forEach((landmark, j) => {
-                        outputs[i].landmarks[j] = new THREE.Vector3(
-                            landmark.x,
-                            landmark.y,
-                            landmark.z
-                        )
-                    })
+                results.multiHandLandmarks.forEach((landmarks) => {
+                    const vectors = landmarks.map(
+                        ({ x, y, z }) => new THREE.Vector3(x, y, z)
+                    )
+                    outputs.multiLandmarks.push(vectors)
                 })
                 resolve(outputs)
             })
