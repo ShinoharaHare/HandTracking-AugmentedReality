@@ -2,44 +2,37 @@
 b-card.fps-widget
     .grid
         span FPS
-        span {{ fps.toFixed(1) }}
-        span Max
-        span {{ max.toFixed(1) }}
-        span Min
-        span {{ min.toFixed(1) }}
+        span {{ fps }}
+        span Avg.
+        span {{ avgFps }}
+        span Max.
+        span {{ maxFps }}
+        span Min.
+        span {{ minFps }}
 </template>
 
 <script lang="ts">
-import { Component, Prop, PropSync, Vue, Watch } from 'nuxt-property-decorator'
+import { Component, Prop, Vue } from 'nuxt-property-decorator'
+import { FPSData } from '@/modules/hand_tracking/tracker/plugins/FPSPlugin'
 
 @Component
 export default class extends Vue {
-    @PropSync('frames') syncedFrames!: number
-    @Prop({ default: 1000 }) interval!: number
+    @Prop() value!: FPSData | null
 
-    intervalId?: number
-    fps: number = 0
-    max: number = -Infinity
-    min: number = Infinity
-
-    reset() {
-        this.max = -Infinity
-        this.min = Infinity
+    get fps() {
+        return this.value?.current?.toFixed(1)
     }
 
-    @Watch('interval', { immediate: true })
-    onIntervalChange() {
-        window.clearInterval(this.intervalId)
-        this.syncedFrames = 0
-        this.max = -Infinity
-        this.min = Infinity
+    get avgFps() {
+        return this.value?.average?.toFixed(1)
+    }
 
-        this.intervalId = window.setInterval(() => {
-            this.fps = this.syncedFrames / (this.interval / 1000)
-            this.max = Math.max(this.max, this.fps)
-            this.min = Math.min(this.min, this.fps)
-            this.syncedFrames = 0
-        }, this.interval)
+    get maxFps() {
+        return this.value?.max?.toFixed(1)
+    }
+
+    get minFps() {
+        return this.value?.min?.toFixed(1)
     }
 }
 </script>
