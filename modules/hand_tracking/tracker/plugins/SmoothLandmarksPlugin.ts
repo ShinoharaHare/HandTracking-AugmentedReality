@@ -8,7 +8,7 @@ export interface SmoothLandmarkPluginOptions {
 }
 
 export class SmoothLandmarkPlugin extends HandTrackerPlugin {
-    smoothCount: number = 5
+    smoothCount: number = 1
     smoothTolerance: number = 0.001
 
     private pools: Landmarks[][] = []

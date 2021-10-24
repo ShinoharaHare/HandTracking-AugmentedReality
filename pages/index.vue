@@ -32,8 +32,8 @@ export default class extends Vue {
         window.core = this.core = new Core({
             container: this.container,
             arSourceParams: {
-                sourceType: 'video',
-                sourceUrl: '/test.mkv',
+                // sourceType: 'video',
+                // sourceUrl: '/test.mkv',
                 sourceWidth: 640,
                 sourceHeight: 480
             },
@@ -48,22 +48,31 @@ export default class extends Vue {
         const left = new Hand(Handedness.Left)
         left.rotation.x = Math.PI / 2
         left.rotation.z = Math.PI
+        left.position.x = 0.5
         left.position.z = -3.0
         left.position.y = -0.5
         this.core.add(left)
+
+        const right = new Hand(Handedness.Right)
+        right.rotation.x = Math.PI / 2
+        right.rotation.z = Math.PI
+        right.position.x = -0.5
+        right.position.z = -3.0
+        right.position.y = -0.5
+        this.core.add(right)
 
         this.tracker = new MediaPipeTracker(
             this.core.arSourceVideo,
             {
                 plugins: [
-                    new HandednessPlugin(),
-                    new SmoothLandmarkPlugin({ smoothCount: 5, smoothTolerance: 0.001 }),
+                    new HandednessPlugin({ selfieMode: true }),
+                    new SmoothLandmarkPlugin({ smoothCount: 2, smoothTolerance: 0.001 }),
                     new MediaPipe3DAnglePlugin({
                         multiHandlandmarksPropertyName: 'multiSmoothLandmarks'
                     }),
                     new FPSPlugin()
                 ],
-                maxNumHands: 1,
+                maxNumHands: 2,
                 minDetectionConfidence: 0.9,
                 minTrackingConfidence: 0.9,
                 minInterval: 0
@@ -81,15 +90,15 @@ export default class extends Vue {
             const canvasCtx = this.core.context2D
             canvasCtx.clearRect(0, 0, this.core.canvas2D.width, this.core.canvas2D.height)
 
-            // if (result.multiHandAngles?.[0]) {
-            //     left.behavior.angles.set(result.multiHandAngles[0])
-            // }
-
-            // console.log(result.multiHandedness?.[0], result.multiHandedness?.[1])
-            // console.log(result.multiSmoothLandmarks?.[0], result.multiSmoothLandmarks?.[1])
-
             result.multiHandedness?.forEach((handedness, i) => {
                 const landmarks = result.multiSmoothLandmarks![i]
+                // const landmarks = result.multiHandLandmarks![i]
+
+                if (handedness === Handedness.Left) {
+                    left.behavior.angles.set(result.multiHandAngles![i])
+                } else {
+                    right.behavior.angles.set(result.multiHandAngles![i])
+                }
 
                 canvasCtx.save()
                 drawConnectors(canvasCtx, landmarks, HAND_CONNECTIONS, {

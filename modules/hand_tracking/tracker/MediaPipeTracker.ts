@@ -32,8 +32,10 @@ export class MediaPipeTracker extends HandTracker {
         return new Promise((resolve) => {
             this.hands.onResults((results) => {
                 const outputs: HandTrackerResult & any = {
-                    landmarks: results.multiHandLandmarks?.[0],
+                    mediapipeResults: results,
+                    multiHandLandmarks: []
                 }
+                
                 if (results.multiHandLandmarks?.length) {
                     for (let i = 0; i < results.multiHandLandmarks.length; i++) {
                         for (let j = 0; j < results.multiHandLandmarks[i].length; j++) {
@@ -41,8 +43,8 @@ export class MediaPipeTracker extends HandTracker {
                             this.buffer[i][j].y = results.multiHandLandmarks[i][j].y
                             this.buffer[i][j].z = results.multiHandLandmarks[i][j].z
                         }
+                        outputs.multiHandLandmarks[i] = this.buffer[i]
                     }
-                    outputs.multiHandLandmarks = this.buffer
                 }
 
                 resolve(outputs)

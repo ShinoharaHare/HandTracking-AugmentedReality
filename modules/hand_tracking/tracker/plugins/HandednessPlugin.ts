@@ -28,10 +28,7 @@ export class HandednessPlugin extends HandTrackerPlugin {
         const multiHandedness: Handedness[] = []
 
         multiHandLandmarks.forEach((landmarks, i) => {
-            let handedness: Handedness = Handedness.Left
-            if (landmarks[5].x > landmarks[17].x) {
-                handedness = Handedness.Right
-            }
+            let handedness = landmarks[5].x > landmarks[17].x ? Handedness.Left : Handedness.Right
             if (this.selfieMode) {
                 handedness = this.reverseHandedness(handedness)
             }
