@@ -29,13 +29,13 @@ export class HandednessPlugin extends HandTrackerPlugin {
 
         multiHandLandmarks.forEach((landmarks, i) => {
             let handedness: Handedness = Handedness.Left
-            multiHandedness.push(handedness)
-            if (landmarks[5].x < landmarks[17].x) {
+            if (landmarks[5].x > landmarks[17].x) {
                 handedness = Handedness.Right
             }
             if (this.selfieMode) {
                 handedness = this.reverseHandedness(handedness)
             }
+            multiHandedness[i] = handedness
         })
 
         return multiHandedness

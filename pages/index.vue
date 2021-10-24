@@ -32,6 +32,8 @@ export default class extends Vue {
         window.core = this.core = new Core({
             container: this.container,
             arSourceParams: {
+                sourceType: 'video',
+                sourceUrl: '/test.mkv',
                 sourceWidth: 640,
                 sourceHeight: 480
             },
@@ -56,12 +58,15 @@ export default class extends Vue {
                 plugins: [
                     new HandednessPlugin(),
                     new SmoothLandmarkPlugin({ smoothCount: 5, smoothTolerance: 0.001 }),
-                    new MediaPipe3DAnglePlugin({ multiHandlandmarksPropertyName: 'multiSmoothLandmarks' }),
+                    new MediaPipe3DAnglePlugin({
+                        multiHandlandmarksPropertyName: 'multiSmoothLandmarks'
+                    }),
                     new FPSPlugin()
                 ],
                 maxNumHands: 1,
                 minDetectionConfidence: 0.9,
-                minTrackingConfidence: 0.9
+                minTrackingConfidence: 0.9,
+                minInterval: 0
             },
             {
                 locateFile: (file) => `/mediapipe/${file}`
@@ -76,24 +81,27 @@ export default class extends Vue {
             const canvasCtx = this.core.context2D
             canvasCtx.clearRect(0, 0, this.core.canvas2D.width, this.core.canvas2D.height)
 
-            if (result.multiHandAngles?.[0]) {
-                left.behavior.angles.set(result.multiHandAngles[0])
-            }
+            // if (result.multiHandAngles?.[0]) {
+            //     left.behavior.angles.set(result.multiHandAngles[0])
+            // }
 
-            if (result.multiSmoothLandmarks?.[0]) {
-                const landmarks = result.multiSmoothLandmarks[0]
+            // console.log(result.multiHandedness?.[0], result.multiHandedness?.[1])
+            // console.log(result.multiSmoothLandmarks?.[0], result.multiSmoothLandmarks?.[1])
+
+            result.multiHandedness?.forEach((handedness, i) => {
+                const landmarks = result.multiSmoothLandmarks![i]
 
                 canvasCtx.save()
                 drawConnectors(canvasCtx, landmarks, HAND_CONNECTIONS, {
-                    color: '#00FF00'
+                    color: handedness === Handedness.Left ? '#00FF00' : '#FF0000'
                 })
                 drawLandmarks(canvasCtx, landmarks, {
-                    color: '#00FF00',
-                    fillColor: '#FF0000',
+                    color: handedness === Handedness.Left ? '#00FF00' : '#FF0000',
+                    fillColor: handedness === Handedness.Left ? '#FF0000' : '#00FF00',
                     radius: (data: Data) => lerp(data.from!.z!, -0.15, 0.1, 10, 1)
                 })
                 canvasCtx.restore()
-            }
+            })
         })
 
         this.tracker.start()

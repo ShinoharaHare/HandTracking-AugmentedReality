@@ -210,6 +210,7 @@ export class Core extends THREE.EventDispatcher {
                 this.onResize()
             })
             this.ready = true
+            this.onResize()
         })
 
         context.init(() => {
