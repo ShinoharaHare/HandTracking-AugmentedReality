@@ -1,4 +1,16 @@
-import { Finger, Knucle } from './data'
+enum Finger {
+    Thumb,
+    Index,
+    Middle,
+    Ring,
+    Pinky
+}
+
+enum Knucle {
+    Proximal,
+    Intermediate,
+    Distal
+}
 
 export class AngleData {
     private data: Float32Array = new Float32Array(15)

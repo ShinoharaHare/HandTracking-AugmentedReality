@@ -24,7 +24,7 @@ export default {
     },
 
     // Global CSS: https://go.nuxtjs.dev/config-css
-    css: ['@/assets/main.css'],
+    css: ['@/assets/main.css', '@/modules/simple_game_engine/main.css'],
 
     // Plugins to run before rendering page: https://go.nuxtjs.dev/config-plugins
     plugins: ['@/plugins/utils.ts'],
@@ -58,7 +58,7 @@ export default {
 
     server: {
         https: false,
-        port: 8080, // default: 3000
+        port: 3000, // default: 3000
         host: '0.0.0.0' // default: localhost
     },
 

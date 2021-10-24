@@ -1,27 +1,44 @@
 <template lang="pug">
-    .d-flex.flex-column.p-4
-        b-card
-            b-card-title.text-center 平滑化
+.d-flex.flex-column.p-4
+    b-card
+        b-card-title.text-center 平滑化
 
-            b-form-file(accept=".landmarks.jsonl" browse-text="瀏覽" placeholder="" v-model="inputFile")
+        b-form-file(
+            accept=".landmarks.jsonl",
+            browse-text="瀏覽",
+            placeholder="",
+            v-model="inputFile"
+        )
 
-            b-card.mt-2
-                b-form-checkbox(switch id="switch-smooth" slot="header" v-model="smooth.enabled")
-                    label(for="switch-smooth") 啟用平滑化
-                    
-                b-row.text-center
-                    b-col
-                        label Count
-                    b-col
-                        label Tolerance(°)
-                b-row.text-center
-                    b-col
-                        b-form-spinbutton(vertical step="1" v-model="smooth.count")
-                    b-col
-                        b-form-spinbutton(vertical step="1" v-model="smooth.tolerance")
+        b-card.mt-2
+            b-form-checkbox#switch-smooth(
+                switch,
+                slot="header",
+                v-model="smooth.enabled"
+            )
+                label(for="switch-smooth") 啟用平滑化
 
-            b-card.mt-2
-                LineChart(ref="chart" :chartData="data" :options="options")
+            b-row.text-center
+                b-col
+                    label Count
+                b-col
+                    label Tolerance(°)
+            b-row.text-center
+                b-col
+                    b-form-spinbutton(
+                        vertical,
+                        step="1",
+                        v-model="smooth.count"
+                    )
+                b-col
+                    b-form-spinbutton(
+                        vertical,
+                        step="1",
+                        v-model="smooth.tolerance"
+                    )
+
+        b-card.mt-2
+            LineChart(ref="chart", :chartData="data", :options="options")
 </template>
 
 <script lang="ts">
@@ -32,7 +49,7 @@ import { ChartData, ChartOptions } from 'chart.js'
 import { AngleSmoother, MP3DEstimator } from '@/modules/hand_tracking'
 import { AngleData } from '@/modules/hand_tracking/AngleData'
 
-import LineChart from '~/components/LineChart.vue'
+import LineChart from '@/components/LineChart.vue'
 
 @Component({
     layout: 'center'
@@ -82,7 +99,7 @@ export default class extends Vue {
             }
         ]
     }
-    
+
     options: ChartOptions = {
         devicePixelRatio: 2,
         legend: {

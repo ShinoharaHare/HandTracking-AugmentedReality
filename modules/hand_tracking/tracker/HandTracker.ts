@@ -1,14 +1,16 @@
 import * as THREE from 'three'
 
-export type InputTarget =
-    | HTMLVideoElement
-    | HTMLImageElement
-    | HTMLCanvasElement
+export type InputTarget = HTMLVideoElement | HTMLImageElement | HTMLCanvasElement
 
 export type Landmarks = THREE.Vector3[]
 
+export enum Handedness {
+    Left = 0,
+    Right = 1
+}
+
 export interface HandTrackerResult {
-    multiLandmarks: Landmarks[]
+    multiHandLandmarks?: Landmarks[]
 }
 
 function wait(ms: number) {
@@ -16,15 +18,19 @@ function wait(ms: number) {
 }
 
 export abstract class HandTrackerPlugin {
+    private internalContext!: HandTracker
+    get context(): HandTracker {
+        return this.internalContext
+    }
+
     readonly name: string
-    context!: HandTracker
+
     constructor(name?: string) {
         this.name = name || this.constructor.name
     }
 
-    onInit(context: HandTracker) {
-        this.context = context
-        this.onStart()
+    onAdd(context: HandTracker) {
+        this.internalContext = context
     }
 
     abstract onStart(): void
@@ -38,9 +44,8 @@ class HandTrackerResultEvent extends Event {
 }
 
 export interface HandTrackerOptions {
-    target: InputTarget
     minInterval: number
-    maxNumHands: number
+    maxNumHands: 1 | 2
     plugins: HandTrackerPlugin[]
 }
 
@@ -48,22 +53,20 @@ export abstract class HandTracker extends EventTarget {
     private plugins: Map<string, HandTrackerPlugin> = new Map()
     private stopFlag: boolean = false
     private runningPromise?: Promise<void>
-    target?: InputTarget
-    readonly minInterval: number = 1 / 3000
-    readonly maxNumHands = 1
+
+    minInterval: number = 1 / 3000
+    maxNumHands: 1 | 2 = 1
 
     get running() {
         return this.runningPromise !== undefined
     }
 
-    constructor(options?: Partial<HandTrackerOptions>) {
+    constructor(readonly target: InputTarget, options?: Partial<HandTrackerOptions>) {
         super()
 
-        if (options?.plugins) {
-            options.plugins.forEach((plugin) => this.addPlugin(plugin))
-            delete options.plugins
-        }
-        Object.assign(this, options)
+        options?.plugins?.forEach((plugin) => this.addPlugin(plugin))
+        this.maxNumHands = options?.maxNumHands ?? this.maxNumHands
+        this.minInterval = options?.minInterval ?? this.minInterval
     }
 
     abstract infer(image: InputTarget): Promise<HandTrackerResult>
@@ -72,6 +75,7 @@ export abstract class HandTracker extends EventTarget {
         if (this.plugins.has(plugin.name)) {
             throw new Error(`Plugin with name ${plugin.name} already exists`)
         }
+        plugin.onAdd(this)
         this.plugins.set(plugin.name, plugin)
     }
 
@@ -84,7 +88,7 @@ export abstract class HandTracker extends EventTarget {
     }
 
     start(): Promise<void> {
-        this.plugins.forEach((plugin) => plugin.onInit(this))
+        this.plugins.forEach((plugin) => plugin.onStart())
 
         this.runningPromise = new Promise(async (resolve) => {
             if (!this.target) {
@@ -99,10 +103,7 @@ export abstract class HandTracker extends EventTarget {
 
                 const lastTime = performance.now()
 
-                if (
-                    this.target instanceof HTMLVideoElement &&
-                    this.target.currentTime <= 0
-                ) {
+                if (this.target instanceof HTMLVideoElement && this.target.currentTime <= 0) {
                     await wait(this.minInterval)
                     continue
                 }

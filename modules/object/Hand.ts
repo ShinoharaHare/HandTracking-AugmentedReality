@@ -1,10 +1,10 @@
-import { ModelGameObject, MonoBehaviour } from '../augmented_reality'
-import { Handedness, AngleData } from '../hand_tracking'
+import { ModelGameObject, MonoBehaviour } from '../simple_game_engine'
+import { Handedness } from '../hand_tracking'
 
 const fingerNames = ['Thumb', 'Index', 'Middle', 'Ring', 'Pinky']
 
 class HandBehavior extends MonoBehaviour {
-    readonly angleData: AngleData = new AngleData()
+    readonly angles: Float32Array = new Float32Array(15)
     public angles2: Float32Array = new Float32Array(5) // 手指張開的角度
 
     get hand(): Hand {
@@ -17,7 +17,7 @@ class HandBehavior extends MonoBehaviour {
 
     update() {
         for (let i = 1; i < 15; i++) {
-            this.hand.bones[i].rotation.x = -this.angleData.getByIndex(i)
+            this.hand.bones[i].rotation.x = -this.angles[i]
         }
         // 手指張開的角度 (暫時排除拇指)
         for (let i = 1; i < 5; i++) {

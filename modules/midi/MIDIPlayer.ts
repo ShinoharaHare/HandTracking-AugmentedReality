@@ -1,5 +1,5 @@
 import './MIDI.min.js'
-import './Base64binary.js'
+import './Base64Binary.js'
 
 const MIDI: any = window.MIDI;
 

@@ -1,7 +1,21 @@
 import { NormalizedLandmark } from '@mediapipe/hands'
 import { Vector3 } from 'three'
-import { Finger, Knucle } from './data'
 import { AngleData } from './AngleData'
+
+
+enum Finger {
+    Thumb,
+    Index,
+    Middle,
+    Ring,
+    Pinky
+}
+
+enum Knucle {
+    Proximal,
+    Intermediate,
+    Distal
+}
 
 export class MP3DEstimator {
     private vectors: Vector3[] = Array.from({ length: 21 }, () => new Vector3())

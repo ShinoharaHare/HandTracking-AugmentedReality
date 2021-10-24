@@ -1,4 +1,4 @@
-export * from './tracker/MediaPipeTracker'
+export * from './tracker'
 export * from './MP3DEstimator'
 export * from './AngleSmoother'
 export * from './data'

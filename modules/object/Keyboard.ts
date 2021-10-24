@@ -1,24 +1,11 @@
 import * as THREE from 'three'
 import { Vector2 } from 'three'
-import { ModelGameObject, MonoBehaviour } from '../augmented_reality'
+import { ModelGameObject, MonoBehaviour } from '../simple_game_engine'
 import { midiPlayer } from '../midi'
 
 type Mesh = THREE.Mesh<THREE.BufferGeometry, THREE.Material>
 
-const noteNames = [
-    'C',
-    'C#',
-    'D',
-    'D#',
-    'E',
-    'F',
-    'F#',
-    'G',
-    'G#',
-    'A',
-    'A#',
-    'B'
-]
+const noteNames = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B']
 
 export class KeyboardBehaviorBase extends MonoBehaviour {
     get keyboard(): Keyboard {
@@ -42,10 +29,7 @@ export class KeyboardBehaviorBase extends MonoBehaviour {
         for (let i = 0; i <= 24; i++) {
             if (this.currentPressedMap.get(i) && !this.lastPressedMap.get(i)) {
                 this.onPress(i)
-            } else if (
-                !this.currentPressedMap.get(i) &&
-                this.lastPressedMap.get(i)
-            ) {
+            } else if (!this.currentPressedMap.get(i) && this.lastPressedMap.get(i)) {
                 this.onRelease(i)
             }
         }
@@ -90,12 +74,8 @@ class KeyboardMouseBehaviour extends KeyboardBehaviorBase {
     private setMousePosition(event: MouseEvent) {
         let element = event.target as HTMLElement
         let offset = element.getBoundingClientRect()
-        this.point.x =
-            ((event.clientX - offset.left) / element.offsetWidth) * 2 - 1
-        this.point.y = -(
-            ((event.clientY - offset.top) / element.offsetHeight) * 2 -
-            1
-        )
+        this.point.x = ((event.clientX - offset.left) / element.offsetWidth) * 2 - 1
+        this.point.y = -(((event.clientY - offset.top) / element.offsetHeight) * 2 - 1)
     }
 
     attach(camera: THREE.Camera, element: HTMLElement) {
@@ -124,9 +104,7 @@ class KeyboardMouseBehaviour extends KeyboardBehaviorBase {
         if (this.camera) {
             if (this.mouseDown) {
                 this.raycaster.setFromCamera(this.point, this.camera)
-                let intersect = this.raycaster.intersectObjects(
-                    this.keyboard.meshes
-                )[0]
+                let intersect = this.raycaster.intersectObjects(this.keyboard.meshes)[0]
                 if (intersect) {
                     const keyName = intersect.object.name
                     let index = parseInt(keyName.substr(3, 2))
@@ -145,13 +123,12 @@ export class Keyboard extends ModelGameObject {
     // readonly mouseBehavior: KeyboardMouseBehaviour = new KeyboardMouseBehaviour(this);
     // readonly handBehavior: KeyboardHandBehaviour = new KeyboardHandBehaviour(this);
     readonly behavior: KeyboardBehaviorBase = new KeyboardBehaviorBase(this)
-    readonly keys: Array<THREE.Object3D> = []
-    readonly meshes: Array<Mesh> = []
-    readonly pressedMaterial: THREE.MeshBasicMaterial =
-        new THREE.MeshPhongMaterial({ color: 'yellow' })
-    readonly tipMaterial: THREE.MeshBasicMaterial = new THREE.MeshPhongMaterial(
-        { color: 'purple' }
-    )
+    readonly keys: THREE.Object3D[] = []
+    readonly meshes: Mesh[] = []
+    readonly pressedMaterial: THREE.MeshBasicMaterial = new THREE.MeshPhongMaterial({
+        color: 'yellow'
+    })
+    readonly tipMaterial: THREE.MeshBasicMaterial = new THREE.MeshPhongMaterial({ color: 'purple' })
     readonly defaultMaterials: THREE.Material[] = []
 
     constructor() {

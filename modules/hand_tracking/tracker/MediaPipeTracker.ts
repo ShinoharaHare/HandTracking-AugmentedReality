@@ -1,38 +1,50 @@
-import {
-    HandTracker,
-    HandTrackerOptions,
-    HandTrackerResult,
-    InputTarget
-} from './HandTracker'
+import { HandTracker, HandTrackerOptions, HandTrackerResult, InputTarget } from './HandTracker'
 
 import * as THREE from 'three'
 import { Hands, Options, HandsConfig } from '@mediapipe/hands'
+import { Landmarks } from './'
 
 export class MediaPipeTracker extends HandTracker {
     private hands: Hands
+    private buffer: Landmarks[]
 
     constructor(
-        options: Partial<HandTrackerOptions> & Options,
+        target: InputTarget,
+        options?: Partial<HandTrackerOptions & Options>,
         config?: HandsConfig
     ) {
-        super(options)
+        super(target, options)
 
         this.hands = new Hands(config)
-        this.hands.setOptions(options)
+        console.log(this.hands, options)
+        this.hands.setOptions(options ?? {})
+
+        this.buffer = []
+        for (let i = 0; i < this.maxNumHands; i++) {
+            this.buffer.push([])
+            for (let j = 0; j < 21; j++) {
+                this.buffer[i].push(new THREE.Vector3())
+            }
+        }
     }
 
     public infer(target: InputTarget): Promise<HandTrackerResult> {
         return new Promise((resolve) => {
-            const outputs: HandTrackerResult = {
-                multiLandmarks: []
-            }
             this.hands.onResults((results) => {
-                results.multiHandLandmarks.forEach((landmarks) => {
-                    const vectors = landmarks.map(
-                        ({ x, y, z }) => new THREE.Vector3(x, y, z)
-                    )
-                    outputs.multiLandmarks.push(vectors)
-                })
+                const outputs: HandTrackerResult & any = {
+                    landmarks: results.multiHandLandmarks?.[0],
+                }
+                if (results.multiHandLandmarks?.length) {
+                    for (let i = 0; i < results.multiHandLandmarks.length; i++) {
+                        for (let j = 0; j < results.multiHandLandmarks[i].length; j++) {
+                            this.buffer[i][j].x = results.multiHandLandmarks[i][j].x
+                            this.buffer[i][j].y = results.multiHandLandmarks[i][j].y
+                            this.buffer[i][j].z = results.multiHandLandmarks[i][j].z
+                        }
+                    }
+                    outputs.multiHandLandmarks = this.buffer
+                }
+
                 resolve(outputs)
             })
             this.hands.send({ image: target })
