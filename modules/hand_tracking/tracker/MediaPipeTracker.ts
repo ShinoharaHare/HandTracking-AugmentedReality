@@ -5,7 +5,7 @@ import { Hands, Options, HandsConfig } from '@mediapipe/hands'
 import { Landmarks } from './'
 
 export class MediaPipeTracker extends HandTracker {
-    private hands: Hands
+    readonly hands: Hands
     private buffer: Landmarks[]
 
     constructor(
@@ -16,7 +16,6 @@ export class MediaPipeTracker extends HandTracker {
         super(target, options)
 
         this.hands = new Hands(config)
-        console.log(this.hands, options)
         this.hands.setOptions(options ?? {})
 
         this.buffer = []
@@ -35,7 +34,7 @@ export class MediaPipeTracker extends HandTracker {
                     mediapipeResults: results,
                     multiHandLandmarks: []
                 }
-                
+
                 if (results.multiHandLandmarks?.length) {
                     for (let i = 0; i < results.multiHandLandmarks.length; i++) {
                         for (let j = 0; j < results.multiHandLandmarks[i].length; j++) {

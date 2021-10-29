@@ -9,9 +9,9 @@
     "generate": "nuxt generate"
   },
   "dependencies": {
-    "@ar-js-org/ar.js": "https://github.com/AR-js-org/AR.js.git#90e83dc",
+    "@ar-js-org/ar.js": "https://github.com/AR-js-org/AR.js.git#c73e90d",
     "@mediapipe/drawing_utils": "^0.3.1620248257",
-    "@mediapipe/hands": "^0.3.1630010197",
+    "@mediapipe/hands": "^0.3.1634603088",
     "@nuxtjs/axios": "^5.13.6",
     "bootstrap": "^4.6.0",
     "bootstrap-vue": "^2.21.2",

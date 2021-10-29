@@ -7,7 +7,7 @@ export interface SmoothLandmarkPluginOptions {
     smoothTolerance: number
 }
 
-export class SmoothLandmarkPlugin extends HandTrackerPlugin {
+export class SmoothLandmarksPlugin extends HandTrackerPlugin {
     smoothCount: number = 1
     smoothTolerance: number = 0.001
 
@@ -41,7 +41,7 @@ export class SmoothLandmarkPlugin extends HandTrackerPlugin {
         if (!result.multiHandLandmarks || !result.multiHandedness) {
             return
         }
-        result.multiSmoothLandmarks = this.outputs
+        result.multiSmoothLandmarks = []
         result.multiHandedness?.forEach((handedness, i) => {
             const poolIndex = handedness === Handedness.Left ? 0 : 1
             const pool = this.pools[poolIndex]
@@ -62,6 +62,8 @@ export class SmoothLandmarkPlugin extends HandTrackerPlugin {
                     this.outputs[i][j].copy(this.average)
                 }
             }
+
+            result.multiSmoothLandmarks![i] = this.outputs[i]
         })
 
         this.index = (this.index + 1) % this.smoothCount

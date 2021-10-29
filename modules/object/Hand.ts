@@ -4,8 +4,7 @@ import { Handedness } from '../hand_tracking'
 const fingerNames = ['Thumb', 'Index', 'Middle', 'Ring', 'Pinky']
 
 class HandBehavior extends MonoBehaviour {
-    readonly angles: Float32Array = new Float32Array(15)
-    public angles2: Float32Array = new Float32Array(5) // 手指張開的角度
+    readonly angles: Float32Array = new Float32Array(20)
 
     get hand(): Hand {
         return this.gameObject as Hand
@@ -17,11 +16,11 @@ class HandBehavior extends MonoBehaviour {
 
     update() {
         for (let i = 1; i < 15; i++) {
-            this.hand.bones[i].rotation.x = -this.angles[i]
+            this.hand.bones[i].rotation.x = -this.angles[i] + this.hand.defaultRotations[i]
         }
         // 手指張開的角度 (暫時排除拇指)
         for (let i = 1; i < 5; i++) {
-            this.hand.bones[i * 3].rotation.z = this.angles2[i]
+            this.hand.bones[i * 3].rotation.z = this.angles[i + 15] + this.hand.defaultRotations[i + 15]
         }
     }
 }
@@ -29,6 +28,7 @@ class HandBehavior extends MonoBehaviour {
 export class Hand extends ModelGameObject {
     readonly behavior: HandBehavior = new HandBehavior(this)
     readonly bones: THREE.Bone[] = []
+    readonly defaultRotations = new Float32Array(20)
 
     private handednessInternal: Handedness = Handedness.Left
 
@@ -70,14 +70,20 @@ export class Hand extends ModelGameObject {
                 this.bones.push(bone)
             }
         }
+
+        for (let i = 1; i < 15; i++) {
+            this.defaultRotations[i] = this.bones[i].rotation.x
+        }
+
+        for (let i = 1; i < 5; i++) {
+            this.defaultRotations[i + 15] = this.bones[i * 3].rotation.z
+        }
     }
 
     private onChangeHandedness() {
         if (this.isModelLoaded) {
             let root = this.getObjectByName('Armature')!
-            root.scale.y =
-                Math.abs(root.scale.y) *
-                (this.handedness === Handedness.Left ? 1 : -1)
+            root.scale.y = Math.abs(root.scale.y) * (this.handedness === Handedness.Left ? 1 : -1)
         }
     }
 

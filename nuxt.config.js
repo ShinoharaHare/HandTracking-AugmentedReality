@@ -1,3 +1,6 @@
+import fs from 'fs'
+import path from 'path'
+
 export default {
     // Disable server-side rendering: https://go.nuxtjs.dev/ssr-mode
     ssr: false,
@@ -20,7 +23,11 @@ export default {
             { hid: 'description', name: 'description', content: '' },
             { name: 'format-detection', content: 'telephone=no' }
         ],
-        link: [{ rel: 'icon', type: 'image/x-icon', href: '/favicon.ico' }]
+        link: [{ rel: 'icon', type: 'image/x-icon', href: '/favicon.ico' }],
+        script: [
+            { src: '/vendors/Base64Binary.js' },
+            { src: '/vendors/MIDI.min.js' }
+        ]
     },
 
     // Global CSS: https://go.nuxtjs.dev/config-css
@@ -57,10 +64,13 @@ export default {
     },
 
     server: {
-        https: false,
+        https: {
+            key: fs.readFileSync(path.resolve(__dirname, './cert/server.key')),
+            cert: fs.readFileSync(path.resolve(__dirname, './cert/server.crt'))
+        },
         port: 3000, // default: 3000
         host: '0.0.0.0' // default: localhost
     },
 
-    loading: '~/components/Loading.vue'
+    loading: '@/components/Loading.vue'
 }

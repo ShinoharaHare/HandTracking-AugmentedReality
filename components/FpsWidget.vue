@@ -1,14 +1,24 @@
-<template lang="pug">
-b-card.fps-widget
-    .grid
-        span FPS
-        span {{ fps }}
-        span Avg.
-        span {{ avgFps }}
-        span Max.
-        span {{ maxFps }}
-        span Min.
-        span {{ minFps }}
+<template >
+    <b-card no-body class="fps-widget">
+        <b-table-simple striped small caption-top responsive class="fps-table text-center">
+            <b-thead head-variant="dark">
+                <b-tr>
+                    <b-th>Cur.</b-th>
+                    <b-th>Avr.</b-th>
+                    <b-th>Max.</b-th>
+                    <b-th>Min.</b-th>
+                </b-tr>
+            </b-thead>
+            <b-tbody>
+                <b-tr>
+                    <b-td>{{ current }}</b-td>
+                    <b-td>{{ average }}</b-td>
+                    <b-td>{{ max }}</b-td>
+                    <b-td>{{ min }}</b-td>
+                </b-tr>
+            </b-tbody>
+        </b-table-simple>
+    </b-card>
 </template>
 
 <script lang="ts">
@@ -19,39 +29,27 @@ import { FPSData } from '@/modules/hand_tracking/tracker/plugins/FPSPlugin'
 export default class extends Vue {
     @Prop() value!: FPSData | null
 
-    get fps() {
+    get current() {
         return this.value?.current?.toFixed(1)
     }
 
-    get avgFps() {
+    get average() {
         return this.value?.average?.toFixed(1)
     }
 
-    get maxFps() {
+    get max() {
         return this.value?.max?.toFixed(1)
     }
 
-    get minFps() {
+    get min() {
         return this.value?.min?.toFixed(1)
     }
 }
 </script>
 
 <style scoped>
-.fps-widget {
-    position: absolute;
-    top: 4px;
-    right: 4px;
-    opacity: 0.65;
-}
-
-.card-body {
-    padding: 8px;
-}
-
-.grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    width: 100px;
+.fps-table {
+    border-radius: 4px;
+    margin: 0;
 }
 </style>

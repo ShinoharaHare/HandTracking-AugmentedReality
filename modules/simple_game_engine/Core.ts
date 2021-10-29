@@ -48,7 +48,7 @@ export class Core extends THREE.EventDispatcher {
     get arSourceVideo(): HTMLVideoElement {
         return this.arToolkitSource.domElement
     }
-    get aspectRaito(): number {
+    get aspectRatio(): number {
         return this.arSourceVideo.videoWidth / this.arSourceVideo.videoHeight
     }
     get canvas(): HTMLCanvasElement {
@@ -90,23 +90,28 @@ export class Core extends THREE.EventDispatcher {
     addMarker(params: string | Partial<MarkerParams>, object: THREE.Object3D): void {
         params = typeof params === 'string' ? { patternUrl: params } : params
         params = createMarkerParams(params)
+        params.type = 'pattern'
         let controls = new THREEx.ArMarkerControls(this.arToolkitContext, object, params)
         return controls
     }
 
     resize(width: number, height: number): void {
         if (!this.fullscreen) {
-            let w = height * this.aspectRaito
+            let w = height * this.aspectRatio
             if (w <= width) {
-                width = height * this.aspectRaito
+                width = height * this.aspectRatio
             } else {
-                height = width / this.aspectRaito
+                height = width / this.aspectRatio
             }
+        } else {
+            height = width / this.aspectRatio
         }
 
-        this.arSourceVideo.style.width = this.fullscreen ? 'auto' : width + 'px'
+        console.log(width, height)
+
+        this.arSourceVideo.style.width = width + 'px'
         this.arSourceVideo.style.height = height + 'px'
-        this.renderer.setSize(width, height)
+        this.renderer.setSize(width, height, true)
         this.canvas2D.width = width
         this.canvas2D.height = height
     }
@@ -133,17 +138,17 @@ export class Core extends THREE.EventDispatcher {
             }
         })
 
-        clearInterval(this.fixedUpdateInterval)
-        this.fixedUpdateInterval = window.setInterval(() => {
-            this.scene.traverse((child) => {
-                if (child instanceof GameObject) {
-                    child.dispatchEvent({
-                        type: 'message:core',
-                        message: 'fixedUpdate'
-                    })
-                }
-            })
-        }, 20)
+        // clearInterval(this.fixedUpdateInterval)
+        // this.fixedUpdateInterval = window.setInterval(() => {
+        //     this.scene.traverse((child) => {
+        //         if (child instanceof GameObject) {
+        //             child.dispatchEvent({
+        //                 type: 'message:core',
+        //                 message: 'fixedUpdate'
+        //             })
+        //         }
+        //     })
+        // }, 20)
     }
 
     stop(): void {
@@ -205,7 +210,7 @@ export class Core extends THREE.EventDispatcher {
             this.arSourceVideo.style.cssText = ''
             this.addOverlay(this.arSourceVideo, -1, 'ar-video--overlay')
             this.arSourceVideo.addEventListener('loadedmetadata', () => {
-                this.camera.aspect = this.aspectRaito
+                this.camera.aspect = this.aspectRatio
                 this.camera.updateProjectionMatrix()
                 this.onResize()
             })
@@ -215,7 +220,7 @@ export class Core extends THREE.EventDispatcher {
 
         context.init(() => {
             const matrix = this.arToolkitContext.getProjectionMatrix()
-            // this.camera.aspect = matrix.elements[5] / matrix.elements[0];
+            // this.camera.aspect = 4 / 3
             this.camera.fov = (2.0 * Math.atan(1.0 / matrix.elements[5]) * 180.0) / Math.PI
             this.camera.near = matrix.elements[14] / (matrix.elements[10] - 1.0)
             this.camera.far = matrix.elements[14] / (matrix.elements[10] + 1.0)
