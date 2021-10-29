@@ -107,8 +107,6 @@ export class Core extends THREE.EventDispatcher {
             height = width / this.aspectRatio
         }
 
-        console.log(width, height)
-
         this.arSourceVideo.style.width = width + 'px'
         this.arSourceVideo.style.height = height + 'px'
         this.renderer.setSize(width, height, true)
