@@ -5,11 +5,73 @@ import { Keyboard } from './Keyboard'
 import { Hand } from './Hand'
 import { Handedness, HandTrackerResult } from '../hand_tracking'
 
+class Threshold {
+    private adjustMode: boolean = true;
+
+    private min: number[];
+    private  max: number[];
+    public RATIO: number = 0.4;
+    private _threshold: number[];
+
+    // ===========
+    private firstTime = true;
+    private start: number;
+    private timeToStopAdjMode: number = 1000 * 10;
+    // =========
+    public name: string = "name?";
+
+    constructor(name: string = "Dick") {
+        this.min = new Array(15).fill(99);
+        this.max = new Array(15).fill(-99);
+        this._threshold = new Array(15).fill(0);
+
+        this.start = Date.now();
+        this.name = name;
+    }
+
+    public setStaticMode() {
+        this.adjustMode = false;
+    }
+    public setAdjustMode() {
+        this.adjustMode = true;
+    }
+
+    public updateThreshold(index: number, angle: number): number{
+        this.min[index] = Math.min(angle, this.min[index]);
+        this.max[index] = Math.max(angle, this.max[index]);
+        this._threshold[index] = this.max[index] * this.RATIO + this.min[index] * (1-this.RATIO);
+        return this._threshold[index];
+    }
+
+    public threshold(index: number, angle: number): number {
+        if(this.firstTime){
+            this.start = Date.now();
+            this.firstTime = false;
+        }
+        if(this.adjustMode){
+            console.log(`%c [${this.name}]ADJ`, "color: blue");
+            if(Date.now() > (this.start + this.timeToStopAdjMode)){
+                this.setStaticMode();
+                console.log(`%c [${this.name}]STATIC`, "color: blue");
+            }
+            return this.updateThreshold(index, angle);
+        }else{
+            return this._threshold[index];
+        }
+    }
+
+    set ratio(r: number) {
+        this.RATIO = r;
+    }
+}
+
 class Behavior extends MonoBehaviour {
     private raycaster: THREE.Raycaster = new THREE.Raycaster()
     private v: THREE.Vector3 = new THREE.Vector3()
     private q: THREE.Quaternion = new THREE.Quaternion()
     private down: THREE.Vector3 = new THREE.Vector3()
+    public LeftThreshold = new Threshold("Left");
+    public RightThreshold = new Threshold("Right");
 
     readonly thresholds = [
         0.4056970998644829, //
@@ -45,9 +107,10 @@ class Behavior extends MonoBehaviour {
 
         this.result?.multiHandedness?.forEach((handedness, i) => {
             let hand = handedness === Handedness.Left ? this.leftHand : this.rightHand
+            let threshold = (true || handedness === Handedness.Left) ? this.LeftThreshold : this.RightThreshold
             hand.visible = true
             hand.behavior.angles.set(this.result!.multiHandAngles![i])
-            hand.position.x = this.result!.multiSmoothLandmarks![i][0].x * 2.5 - 1.25
+            hand.position.x = (1-this.result!.multiSmoothLandmarks![i][0].x) * 2.5 - 1.25;  // selfi mode
             hand.position.z = this.result!.multiSmoothLandmarks![i][0].y * 2 - 1
 
             if (hand.isModelLoaded) {
@@ -60,7 +123,9 @@ class Behavior extends MonoBehaviour {
                     const angles = hand.behavior.angles
                     let pressed = true
                     // pressed = angles[i - 1] > THREE.MathUtils.degToRad(0)
-                    pressed = pressed && angles[i] > this.thresholds[Math.floor(i / 3)]
+                    // pressed = pressed && angles[i] > this.thresholds[Math.floor(i / 3)]
+                    // pressed = pressed && angles[i] > threshold.threshold(i, angles[Math.floor(i / 3)]);
+                    pressed = pressed && angles[i] > threshold.threshold(i, angles[i]);
                     // pressed = pressed && angles[i + 1] > THREE.MathUtils.degToRad(0)
 
                     if (intersect && pressed) {
