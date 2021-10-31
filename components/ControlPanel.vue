@@ -45,28 +45,31 @@
 
             <b-row>
                 <b-col>
-                    <b-form-spinbutton
-                        min="-10"
-                        max="10"
+                    <b-form-input
+                        min="-50"
+                        max="50"
                         step="0.1"
+                        type="number"
                         v-model.number="internalValue.position.x"
-                    ></b-form-spinbutton>
+                    ></b-form-input>
                 </b-col>
                 <b-col>
-                    <b-form-spinbutton
-                        min="-10"
-                        max="10"
+                    <b-form-input
+                        min="-50"
+                        max="50"
                         step="0.1"
+                        type="number"
                         v-model.number="internalValue.position.y"
-                    ></b-form-spinbutton>
+                    ></b-form-input>
                 </b-col>
                 <b-col>
-                    <b-form-spinbutton
-                        min="-10"
-                        max="10"
+                    <b-form-input
+                        min="-50"
+                        max="50"
                         step="0.1"
+                        type="number"
                         v-model.number="internalValue.position.z"
-                    ></b-form-spinbutton>
+                    ></b-form-input>
                 </b-col>
             </b-row>
 
@@ -80,28 +83,31 @@
 
             <b-row>
                 <b-col>
-                    <b-form-spinbutton
+                    <b-form-input
+                        type="number"
                         min="-6.3"
                         max="6.3"
                         step="0.1"
                         v-model.number="internalValue.rotation.x"
-                    ></b-form-spinbutton>
+                    ></b-form-input>
                 </b-col>
                 <b-col>
-                    <b-form-spinbutton
+                    <b-form-input
+                        type="number"
                         min="-6.3"
                         max="6.3"
                         step="0.1"
                         v-model.number="internalValue.rotation.y"
-                    ></b-form-spinbutton>
+                    ></b-form-input>
                 </b-col>
                 <b-col>
-                    <b-form-spinbutton
+                    <b-form-input
+                        type="number"
                         min="-6.3"
                         max="6.3"
                         step="0.1"
                         v-model.number="internalValue.rotation.z"
-                    ></b-form-spinbutton>
+                    ></b-form-input>
                 </b-col>
             </b-row>
         </b-card>
@@ -150,7 +156,15 @@ export default class extends Vue {
     }
 
     confirm() {
+        localStorage.setItem('settings', JSON.stringify(this.internalValue))
         this.$emit('input', Object.assign({}, this.internalValue))
+    }
+
+    created() {
+        let saved = localStorage.getItem('settings')
+        if (saved) {
+            this.internalValue = JSON.parse(saved)
+        }
     }
 
     mounted() {
