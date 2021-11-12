@@ -5,6 +5,7 @@ div(ref='container')
         b-button.btn-setting(v-b-modal.modal-control-panel) 設定
 
     ControlPanel(v-model='options')
+    p.alert-message(hidden="hidden") message
 </template>
 
 <script lang="ts">
@@ -100,6 +101,9 @@ export default class extends Vue {
             new THREE.BoxBufferGeometry(1, 1, 1),
             new THREE.MeshPhongMaterial({ color: 0xffffff })
         )
+        // this.core.addMarker("pattern/pattern-4x4_1000-1.patt", this.keyboardHandScene);
+        // this.core.add(cube);
+
         this.core.add(this.keyboardHandScene)
 
         // const left = new Hand(Handedness.Left)
@@ -151,6 +155,20 @@ export default class extends Vue {
 
         this.tracker.start()
         this.core.start()
+
+        window.showAlert = (message: string, fadeOut = false) => {
+            console.log(`%c ${message}`, " color: red; font-size: 2rem;");
+            const am: any = document.querySelector('.alert-message');
+            am.hidden = false;
+            am.innerText = message;
+            if(fadeOut) {
+                am.classList.add("ani");
+                setTimeout(() => {
+                    am.classList.remove("ani");
+                    am.hidden = true;
+                }, 5000);
+            }
+        };
     }
 
     beforeDestroy() {
@@ -181,5 +199,23 @@ export default class extends Vue {
     position: relative;
     margin: 4px 4px auto auto;
     z-index: 5;
+}
+
+.alert-message {
+    left: 50%;
+    transform: translate(-50%, 0px);
+    position: absolute;
+    font-size: 3rem;
+    color: lightblue;
+    background: rgba(255, 255, 255, 0.4);
+    border-radius: 5px;
+}
+
+.ani {
+  animation: fadeout 5s 1;
+}
+@keyframes fadeout {
+  from { opacity: 1; }
+  to   { opacity: 0; }
 }
 </style>

@@ -20,6 +20,10 @@ class Threshold {
     // =========
     public name: string = "name?";
 
+    private showAlert(message: string, fadeOut: boolean = false) {
+        window.showAlert(message, fadeOut);
+    }
+
     constructor(name: string = "Dick") {
         this.min = new Array(15).fill(99);
         this.max = new Array(15).fill(-99);
@@ -50,9 +54,11 @@ class Threshold {
         }
         if(this.adjustMode){
             console.log(`%c [${this.name}]ADJ`, "color: blue");
+            this.showAlert(`${this.name=="Left"?'右手':'左手'}進入校正模式`);
             if(Date.now() > (this.start + this.timeToStopAdjMode)){
                 this.setStaticMode();
                 console.log(`%c [${this.name}]STATIC`, "color: blue");
+                this.showAlert(`${this.name=="Left"?'右手':'左手'}結束校正模式`, true);
             }
             return this.updateThreshold(index, angle);
         }else{
@@ -106,8 +112,8 @@ class Behavior extends MonoBehaviour {
         this.rightHand.visible = false
 
         this.result?.multiHandedness?.forEach((handedness, i) => {
-            let hand = handedness === Handedness.Left ? this.leftHand : this.rightHand
-            let threshold = (true || handedness === Handedness.Left) ? this.LeftThreshold : this.RightThreshold
+            let hand = handedness !== Handedness.Left ? this.leftHand : this.rightHand
+            let threshold = (handedness === Handedness.Left) ? this.LeftThreshold : this.RightThreshold
             hand.visible = true
             hand.behavior.angles.set(this.result!.multiHandAngles![i])
             hand.position.x = (1-this.result!.multiSmoothLandmarks![i][0].x) * 2.5 - 1.25;  // selfi mode
