@@ -1,10 +1,27 @@
-<template lang="pug">
-div(ref='container')
-    .container-overlay
-        FpsWidget(:value='fps')
-        b-button.btn-setting(v-b-modal.modal-control-panel) 設定
+<template>
+    <div ref="container">
+        <div class="container-overlay">
+            <FpsWidget :value="fps"></FpsWidget>
+            <b-button class="btn-setting" v-b-modal.modal-control-panel>設定</b-button>
+        </div>
+        <ControlPanel v-model="options"></ControlPanel>
 
-    ControlPanel(v-model='options')
+        <transition name="fade">
+            <div class="hint" v-show="showHint">
+                <div class="d-flex align-items-center">
+                    <b-spinner variant="white"></b-spinner>
+
+                    <div class="d-flex flex-column ml-4 text-center fs-xx-large">
+                        <div>
+                            <span>正在校正</span>
+                            <span class="handedness-text">{{ hintText }}</span>
+                        </div>
+                        <div>請隨意開合、彎曲手指</div>
+                    </div>
+                </div>
+            </div>
+        </transition>
+    </div>
 </template>
 
 <script lang="ts">
@@ -31,6 +48,7 @@ import { Data, drawConnectors, drawLandmarks, lerp } from '@mediapipe/drawing_ut
 import { HAND_CONNECTIONS } from '@mediapipe/hands'
 
 import { Options } from '@/components/ControlPanel.vue'
+import { CalibrationContext, CalibrationData, CalibrationState } from '@/modules/calibration'
 
 @Component
 export default class extends Vue {
@@ -46,6 +64,9 @@ export default class extends Vue {
     tracker!: MediaPipeTracker
     options: Options | null = null
     keyboardHandScene: KeyboardHandScene = new KeyboardHandScene()
+
+    showHint: boolean = false
+    hintText: string = ''
 
     draw(result: HandTrackerResult) {
         const canvasCtx = this.core.context2D
@@ -67,11 +88,11 @@ export default class extends Vue {
     }
 
     @Watch('options')
-    onOptionsChange(val: Options) {
+    async onOptionsChange(val: Options) {
         this.keyboardHandScene.keyboard.position.set(val.position.x, val.position.y, val.position.z)
         this.keyboardHandScene.keyboard.rotation.set(val.rotation.x, val.rotation.y, val.rotation.z)
 
-        this.tracker.stop()
+        await this.tracker.stop()
         this.tracker.maxNumHands = val.maxNumHands
         this.tracker.hands.setOptions({ maxNumHands: val.maxNumHands })
         this.tracker.start()
@@ -96,10 +117,17 @@ export default class extends Vue {
         this.core.add(new THREE.AmbientLight(0x666666))
         this.core.add(new THREE.DirectionalLight(0xffffff, 0.5))
 
-        const cube = new THREE.Mesh(
-            new THREE.BoxBufferGeometry(1, 1, 1),
-            new THREE.MeshPhongMaterial({ color: 0xffffff })
-        )
+        // const cube = new THREE.Mesh(
+        //     new THREE.BoxBufferGeometry(1, 1, 1),
+        //     new THREE.MeshPhongMaterial({ color: 0xffffff })
+        // )
+        // this.core.addMarker(
+        //     {
+        //         patternUrl: '/pattern/aruco-8-0.9.patt',
+        //         type: 'pattern'
+        //     },
+        //     this.keyboardHandScene
+        // )
         this.core.add(this.keyboardHandScene)
 
         // const left = new Hand(Handedness.Left)
@@ -117,6 +145,7 @@ export default class extends Vue {
         // right.position.z = -3.0
         // right.position.y = -0.5
         // this.core.add(right)
+
         this.tracker = new MediaPipeTracker(
             this.core.arSourceVideo,
             {
@@ -139,7 +168,12 @@ export default class extends Vue {
             }
         )
 
+        let leftContext = new CalibrationContext()
+        let rightContext = new CalibrationContext()
+
         this.tracker.onResults((result) => {
+            // console.log(result)
+
             this.fps = result.fps ?? this.fps
             this.keyboardHandScene.behavior.result = result
             this.core.context2D.clearRect(0, 0, this.core.canvas2D.width, this.core.canvas2D.height)
@@ -147,6 +181,23 @@ export default class extends Vue {
             if (this.options?.drawLandmarks) {
                 this.draw(result)
             }
+
+            result.multiHandedness?.map((handedness, i) => {
+                const context = handedness === Handedness.Left ? leftContext : rightContext
+                if (context.state === CalibrationState.Idle) {
+                    this.showHint = true
+                    this.hintText = handedness === Handedness.Left ? '左手' : '右手'
+                    context
+                        .calibrate(5000)
+                        .then(data => {
+                            this.showHint = false
+                            let thresholds = data.getThresholds(0.4)
+                            this.keyboardHandScene.behavior.thresholds.set(handedness, thresholds)
+                        })
+                } else if (context.state === CalibrationState.Calibrating) {
+                    context.updateAngles(result.multiHandAngles![i])
+                }
+            })
         })
 
         this.tracker.start()
@@ -154,7 +205,7 @@ export default class extends Vue {
     }
 
     beforeDestroy() {
-        this.tracker.stop()
+        this.tracker.stop(true)
         this.core.stop()
     }
 }
@@ -181,5 +232,20 @@ export default class extends Vue {
     position: relative;
     margin: 4px 4px auto auto;
     z-index: 5;
+}
+
+.handedness-text {
+    color: rgb(245, 235, 101);
+}
+
+.hint {
+    left: 50%;
+    transform: translate(-50%, 0px);
+    position: absolute;
+    color: rgb(255, 255, 255);
+    background: rgba(0, 0, 0, 0.7);
+    border-radius: 8px;
+    white-space: pre-wrap;
+    padding: 4px 16px;
 }
 </style>

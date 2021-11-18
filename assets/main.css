@@ -3,3 +3,24 @@ body {
     height: 100%;
     width: 100%;
 }
+
+.fs-x-large {
+    font-size: x-large !important;
+}
+
+.fs-xx-large {
+    font-size: xx-large !important;
+}
+
+.fade-enter-active {
+    transition: all 0.5s ease;
+}
+
+.fade-leave-active {
+    transition: all 0.8s cubic-bezier(1, 0.5, 0.8, 1);
+}
+
+.fade-enter,
+.fade-leave-to {
+    opacity: 0;
+}

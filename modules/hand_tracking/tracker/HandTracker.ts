@@ -49,9 +49,12 @@ export interface HandTrackerOptions {
     plugins: HandTrackerPlugin[]
 }
 
+type ResultCallback = (result: HandTrackerResult) => (void | Promise<void>)
+
 export abstract class HandTracker extends EventTarget {
     private plugins: Map<string, HandTrackerPlugin> = new Map()
     private stopFlag: boolean = false
+    private callbacks: EventListenerOrEventListenerObject[] = []
     private runningPromise?: Promise<void>
 
     minInterval: number = 1 / 3000
@@ -88,14 +91,14 @@ export abstract class HandTracker extends EventTarget {
     }
 
     start(): Promise<void> {
-        this.plugins.forEach((plugin) => plugin.onStart())
-
         this.runningPromise = new Promise(async (resolve) => {
             if (!this.target) {
                 return
             }
 
-            for (;;) {
+            this.plugins.forEach((plugin) => plugin.onStart())
+
+            for (; ;) {
                 if (this.stopFlag) {
                     this.stopFlag = false
                     break
@@ -127,15 +130,21 @@ export abstract class HandTracker extends EventTarget {
         return this.runningPromise
     }
 
-    stop() {
+    stop(clearCallbacks: boolean = false) {
         this.stopFlag = true
+        if (clearCallbacks) {
+            this.callbacks.forEach(callback => this.removeEventListener('result', callback))
+            this.callbacks.length = 0
+        }
         return this.runningPromise
     }
 
-    onResults(callback: (result: HandTrackerResult) => void) {
-        this.addEventListener('result', (e: unknown) => {
+    onResults(callback: ResultCallback) {
+        const listener = (e: unknown) => {
             const envent = e as HandTrackerResultEvent
             callback(envent.result)
-        })
+        }
+        this.callbacks.push(listener)
+        this.addEventListener('result', listener)
     }
 }

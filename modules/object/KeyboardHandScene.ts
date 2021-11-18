@@ -11,13 +11,7 @@ class Behavior extends MonoBehaviour {
     private q: THREE.Quaternion = new THREE.Quaternion()
     private down: THREE.Vector3 = new THREE.Vector3()
 
-    readonly thresholds = [
-        0.4056970998644829, //
-        0.807897212356329,
-        0.9463933229446412,
-        1.032001255452633,
-        0.9087469541467726
-    ]
+    readonly thresholds: Map<Handedness, Float32Array> = new Map()
 
     get keyboardHandScene() {
         return this.gameObject as KeyboardHandScene
@@ -37,7 +31,7 @@ class Behavior extends MonoBehaviour {
 
     result?: HandTrackerResult
 
-    start() {}
+    start() { }
 
     update() {
         this.leftHand.visible = false
@@ -50,7 +44,8 @@ class Behavior extends MonoBehaviour {
             hand.position.x = this.result!.multiSmoothLandmarks![i][0].x * 2.5 - 1.25
             hand.position.z = this.result!.multiSmoothLandmarks![i][0].y * 2 - 1
 
-            if (hand.isModelLoaded) {
+            const thresholds = this.thresholds.get(handedness)
+            if (hand.isModelLoaded && thresholds) {
                 for (let i = 4; i < 15; i += 3) {
                     hand.bones[i].getWorldPosition(this.v)
                     hand.getWorldQuaternion(this.q)
@@ -59,9 +54,9 @@ class Behavior extends MonoBehaviour {
                     let intersect = this.raycaster.intersectObjects(this.keyboard.meshes)[0]
                     const angles = hand.behavior.angles
                     let pressed = true
-                    // pressed = angles[i - 1] > THREE.MathUtils.degToRad(0)
-                    pressed = pressed && angles[i] > this.thresholds[Math.floor(i / 3)]
-                    // pressed = pressed && angles[i + 1] > THREE.MathUtils.degToRad(0)
+                    pressed = pressed && angles[i - 1] > thresholds[Math.floor(i / 3) - 1]
+                    pressed = pressed || angles[i] > thresholds[Math.floor(i / 3)]
+                    pressed = pressed && angles[i + 1] > thresholds[Math.floor(i / 3) + 1]
 
                     if (intersect && pressed) {
                         const keyName = intersect.object.name

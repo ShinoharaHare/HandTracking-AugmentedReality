@@ -1,5 +1,5 @@
 import * as THREE from 'three'
-import { Landmarks } from '~/modules/hand_tracking'
+import { Landmarks } from '@/modules/hand_tracking'
 import { HandTrackerPlugin, HandTrackerResult } from '..'
 
 enum Finger {

@@ -174,4 +174,7 @@ export default class extends Vue {
 </script>
 
 <style scoped>
+.form-control {
+    text-align: center;
+}
 </style>

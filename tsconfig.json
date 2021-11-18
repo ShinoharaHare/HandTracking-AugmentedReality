@@ -3,7 +3,11 @@
         "target": "es6",
         "module": "commonjs",
         "moduleResolution": "Node",
-        "lib": ["ESNext", "ESNext.AsyncIterable", "DOM"],
+        "lib": [
+            "ESNext",
+            "ESNext.AsyncIterable",
+            "DOM"
+        ],
         "esModuleInterop": true,
         "allowJs": true,
         "sourceMap": true,
@@ -12,10 +16,31 @@
         "experimentalDecorators": true,
         "baseUrl": ".",
         "paths": {
-            "~/*": ["./*"],
-            "@/*": ["./*"]
+            // "~/*": [
+            //     "./*"
+            // ],
+            "@/*": [
+                "./*"
+            ]
         },
-        "types": ["@nuxt/types", "@nuxtjs/axios", "@types/node", "@types/dom-mediacapture-record"]
+        "types": [
+            "@nuxt/types",
+            "@nuxtjs/axios",
+            "@types/node",
+            "@types/dom-mediacapture-record"
+        ]
     },
-    "exclude": ["node_modules", ".nuxt", "dist"]
+    "vueCompilerOptions": {
+        "experimentalCompatMode": 2,
+        "experimentalTemplateCompilerOptions": {
+            "compatConfig": {
+                "MODE": 2
+            } // optional
+        }
+    },
+    "exclude": [
+        "node_modules",
+        ".nuxt",
+        "dist"
+    ]
 }
