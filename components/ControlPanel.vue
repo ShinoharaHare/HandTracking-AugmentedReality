@@ -21,18 +21,21 @@
 
             <b-row>
                 <b-col>
-                    <b-form-checkbox switch v-model="internalValue.selfieMode">
-                        自拍模式(拍攝手心)
-                    </b-form-checkbox>
+                    <b-form-checkbox switch v-model="internalValue.selfieMode">自拍模式(拍攝手心)</b-form-checkbox>
                 </b-col>
             </b-row>
             <hr />
 
             <b-row>
                 <b-col>
-                    <b-form-checkbox switch v-model="internalValue.drawLandmarks">
-                        是否繪製Landmarks
-                    </b-form-checkbox>
+                    <b-form-checkbox switch v-model="internalValue.drawLandmarks">是否繪製Landmarks</b-form-checkbox>
+                </b-col>
+            </b-row>
+            <hr />
+
+            <b-row>
+                <b-col>
+                    <b-form-checkbox switch v-model="internalValue.trackMarker">追蹤Marker</b-form-checkbox>
                 </b-col>
             </b-row>
             <hr />
@@ -121,6 +124,7 @@ export type Options = {
     maxNumHands: 1 | 2
     drawLandmarks: boolean
     selfieMode: boolean
+    trackMarker: boolean
     position: {
         x: number
         y: number
@@ -135,7 +139,7 @@ export type Options = {
 
 @Component
 export default class extends Vue {
-    @Prop({ default: () => {} }) value!: Options
+    @Prop({ default: () => { } }) value!: Options
 
     show: boolean = true
 
@@ -143,6 +147,7 @@ export default class extends Vue {
         maxNumHands: 2,
         drawLandmarks: true,
         selfieMode: false,
+        trackMarker: true,
         position: {
             x: 0,
             y: 0,

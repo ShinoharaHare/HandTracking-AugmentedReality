@@ -98,6 +98,7 @@ export default class extends Vue {
         this.tracker.start()
 
         this.handednessPlugin.selfieMode = val.selfieMode
+        this.keyboardHandScene.behavior.selfieMode = val.selfieMode
     }
 
     mounted() {
@@ -121,14 +122,22 @@ export default class extends Vue {
         //     new THREE.BoxBufferGeometry(1, 1, 1),
         //     new THREE.MeshPhongMaterial({ color: 0xffffff })
         // )
-        // this.core.addMarker(
-        //     {
-        //         patternUrl: '/pattern/aruco-8-0.9.patt',
-        //         type: 'pattern'
-        //     },
-        //     this.keyboardHandScene
-        // )
+        const dummy = new THREE.Object3D()
+        this.core.addMarker(
+            {
+                patternUrl: '/pattern/aruco-8-0.9.patt',
+                type: 'pattern'
+            },
+            dummy
+        )
         this.core.add(this.keyboardHandScene)
+        this.core.addEventListener('update', () => {
+            if (this.options?.trackMarker) {
+                this.keyboardHandScene.position.copy(dummy.position)
+                this.keyboardHandScene.rotation.copy(dummy.rotation)
+                this.keyboardHandScene.scale.copy(dummy.scale)
+            }
+        })
 
         // const left = new Hand(Handedness.Left)
         // left.rotation.x = Math.PI / 2

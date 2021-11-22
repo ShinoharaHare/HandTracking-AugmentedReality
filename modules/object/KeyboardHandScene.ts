@@ -11,6 +11,8 @@ class Behavior extends MonoBehaviour {
     private q: THREE.Quaternion = new THREE.Quaternion()
     private down: THREE.Vector3 = new THREE.Vector3()
 
+    public selfieMode = false
+
     readonly thresholds: Map<Handedness, Float32Array> = new Map()
 
     get keyboardHandScene() {
@@ -41,7 +43,9 @@ class Behavior extends MonoBehaviour {
             let hand = handedness === Handedness.Left ? this.leftHand : this.rightHand
             hand.visible = true
             hand.behavior.angles.set(this.result!.multiHandAngles![i])
-            hand.position.x = this.result!.multiSmoothLandmarks![i][0].x * 2.5 - 1.25
+
+            let x = this.selfieMode ? (1 - this.result!.multiSmoothLandmarks![i][0].x) : this.result!.multiSmoothLandmarks![i][0].x
+            hand.position.x = x * 2.5 - 1.25
             hand.position.z = this.result!.multiSmoothLandmarks![i][0].y * 2 - 1
 
             const thresholds = this.thresholds.get(handedness)
