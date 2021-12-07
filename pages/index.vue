@@ -99,6 +99,12 @@ export default class extends Vue {
 
         this.handednessPlugin.selfieMode = val.selfieMode
         this.keyboardHandScene.behavior.selfieMode = val.selfieMode
+
+        if (val.selfieMode) {
+            this.core.flip()
+        } else {
+            this.core.unflip()
+        }
     }
 
     mounted() {

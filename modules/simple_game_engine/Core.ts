@@ -114,6 +114,16 @@ export class Core extends THREE.EventDispatcher {
         this.canvas2D.height = height
     }
 
+    flip(): void {
+        this.arSourceVideo.classList.add('flip-x')
+        this.canvas2D.classList.add('flip-x')
+    }
+
+    unflip(): void {
+        this.arSourceVideo.classList.remove('flip-x')
+        this.canvas2D.classList.remove('flip-x')
+    }
+
     private onResize(): void {
         if (this.ready) {
             this.resize(window.innerWidth, window.innerHeight)
