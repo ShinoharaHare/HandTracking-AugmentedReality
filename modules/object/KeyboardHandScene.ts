@@ -58,9 +58,9 @@ class Behavior extends MonoBehaviour {
                     let intersect = this.raycaster.intersectObjects(this.keyboard.meshes)[0]
                     const angles = hand.behavior.angles
                     let pressed = true
-                    pressed = pressed && angles[i - 1] > thresholds[Math.floor(i / 3) - 1]
-                    pressed = pressed || angles[i] > thresholds[Math.floor(i / 3)]
-                    pressed = pressed && angles[i + 1] > thresholds[Math.floor(i / 3) + 1]
+                    pressed = pressed && angles[i - 1] > thresholds[i - 1]
+                    pressed = pressed || angles[i] > thresholds[i]
+                    pressed = pressed && angles[i + 1] > thresholds[i + 1]
 
                     if (intersect && pressed) {
                         const keyName = intersect.object.name
